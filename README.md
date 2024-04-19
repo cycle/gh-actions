@@ -17,7 +17,6 @@
 [![Software License](https://img.shields.io/github/license/cycle/gh-actions.svg?style=flat-square&color=blue)](LICENSE.md)
 [![Commits since latest release](https://img.shields.io/github/commits-since/cycle/gh-actions/latest?style=flat-square)](https://github.com/cycle/gh-actions)
 [![Discord](https://img.shields.io/discord/538114875570913290?style=flat-square&logo=discord&labelColor=7289d9&logoColor=white&color=39456d)](https://discord.gg/spiralphp)
-[![Follow on Twitter](https://img.shields.io/twitter/follow/SpiralScout.svg?style=flat-square&logo=x&color=6e7781)](https://twitter.com/intent/follow?screen_name=SpiralScout)
 
 </div>
 
@@ -293,7 +292,7 @@ You are more than welcome. Before contributing, kindly check our [contribution g
 
 ## 🌐 Social Links
 
-- **Twitter (X):** Follow our organization [@SpiralScout](https://twitter.com/intent/follow?screen_name=SpiralScout).
+- **Twitter (X):** Follow our organization [@SpiralPHP](https://twitter.com/intent/follow?screen_name=SpiralPHP).
 - **Discord:** Join our community on [Discord](https://discord.gg/spiralphp).
 
 <br>
