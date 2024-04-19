@@ -1,23 +1,25 @@
-<br>
-
 <div align="center">
-<img width="456" src="https://raw.githubusercontent.com/cycle/gh-actions/master/assets/logo.gh-light-mode-only.png#gh-light-mode-only" alt="WayOfDev Logo for light theme">
-<img width="456" src="https://raw.githubusercontent.com/cycle/gh-actions/master/assets/logo.gh-dark-mode-only.png#gh-dark-mode-only" alt="WayOfDev Logo for dark theme">
+    <a href="https://cycle-orm.dev" target="_blank">
+        <picture>
+            <source media="(prefers-color-scheme: dark)" srcset="https://github.com/cycle/.github/blob/main/logo/words-vector-dark.svg?raw=true">
+            <img width="50%" align="center" src="https://github.com/cycle/.github/blob/main/logo/words-vector-light.svg?raw=true">
+        </picture>
+    </a>
 </div>
 
 <br>
+
 <br>
 
 <div align="center">
-<a href="https://github.com/cycle/gh-actions/actions" target="_blank"><img alt="Build Status" src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fwayofdev%2Fgh-actions%2Fbadge&style=flat-square"/></a>
-<a href="../../../LICENSE.md"><img src="https://img.shields.io/github/license/cycle/gh-actions.svg?style=flat-square&color=blue" alt="Software License"/></a>
-<a href="" target="_blank"><img alt="Commits since latest release" src="https://img.shields.io/github/commits-since/cycle/gh-actions/latest?style=flat-square"></a>
-<a href="https://discord.gg/CE3TcCC5vr" target="_blank"><img alt="Codecov" src="https://img.shields.io/discord/1228506758562058391?style=flat-square&logo=discord&labelColor=7289d9&logoColor=white&color=39456d"></a>
-<a href="https://twitter.com/intent/follow?screen_name=wayofdev" target="_blank"><img src="https://img.shields.io/twitter/follow/wayofdev.svg?style=flat-square&logo=x&color=6e7781"></a>
+
+[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fwayofdev%2Fgh-actions%2Fbadge&style=flat-square)](https://github.com/cycle/gh-actions/actions)
+[![Software License](https://img.shields.io/github/license/cycle/gh-actions.svg?style=flat-square&color=blue)](LICENSE.md)
+[![Commits since latest release](https://img.shields.io/github/commits-since/cycle/gh-actions/latest?style=flat-square)](https://github.com/cycle/gh-actions)
+[![Discord](https://img.shields.io/discord/538114875570913290?style=flat-square&logo=discord&labelColor=7289d9&logoColor=white&color=39456d)](https://discord.gg/spiralphp)
+[![Follow on Twitter](https://img.shields.io/twitter/follow/SpiralScout.svg?style=flat-square&logo=x&color=6e7781)](https://twitter.com/intent/follow?screen_name=SpiralScout)
+
 </div>
-
-
-<br>
 
 # Phive / Install
 
@@ -25,7 +27,7 @@ This action installs dependencies with [Phive](https://github.com/phar-io/phive)
 
 <br>
 
-## Example Usage
+## 🤔 Example Usage
 
 Create a new workflow file, for example, `.github/workflows/integrate.yml`, and add the following code to it.
 
@@ -67,7 +69,7 @@ Real-world examples can be found in the [`wayofdev/laravel-package-tpl`](https:/
 
 <br>
 
-## Structure
+## 🗂️ Structure
 
 ### Inputs
 
