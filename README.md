@@ -69,9 +69,6 @@ Check each action's README file for detailed instructions on how to use it.
 | [`composer/get-root-version`](./actions/composer/get-root-version/README.md)       | determines the Composer root version based on the specified branch and exports it as env variable. |
 | [`composer/install`](./actions/composer/install/README.md)                         | Installs dependencies with Composer based on the specified dependency level.                       |
 | [`phive/install`](./actions/phive/install/README.md)                               | Install dependencies with [Phive](https://phar.io).                                                |
-| [`playwright/install`](./actions/playwright/install/README.md)                     | Installs [Playwright](https://playwright.dev/) along with its dependencies.                        |
-| [`pnpm/install`](./actions/pnpm/install/README.md)                                 | Installs mono-repository dependencies using [PNPM](https://pnpm.io/).                              |
-| [`s3/cache`](./actions/s3/cache/README.md)                                         | Cache artifacts, or restore them using S3.                                                         |
 
 <br>
 
@@ -180,115 +177,6 @@ jobs:
 </details>
 
 Real-world examples can be found in the [`wayofdev/laravel-package-tpl`](https://github.com/wayofdev/laravel-package-tpl/blob/master/.github/workflows/auto-merge-release.yml) repository.
-
-<br>
-
-#### `create-changesets-release.yml:`
-
-This workflow creates a release based on changesets. This workflow utilizes [changesets/action](https://github.com/changesets/action) to create a release based on changesets.
-
-Here is an example of how to use this workflow:
-
-<details>
-<summary><code>.github/workflows/create-changesets-release.yml</code></summary>
-
-```yaml
----
-on: # yamllint disable-line rule:truthy
-    push:
-        branches:
-            - master
-
-name: 🦋 Create release or publish to pnpm
-
-jobs:
-    release:
-        uses: cycle/gh-actions/.github/workflows/create-changesets-release.yml@master
-        with:
-            node: 18
-            repository: wayofdev/next-starter-tpl
-        secrets:
-            # to trigger other workflows, pass PAT token instead of GITHUB_TOKEN
-            token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
-            npm_token: ${{ secrets.NPM_TOKEN }}
-
-...
-```
-</details>
-
-Real-world examples can be found in the [`wayofdev/next-starter-tpl`](https://github.com/wayofdev/next-starter-tpl/blob/master/.github/workflows/create-changesets-release.yml) repository.
-
-<br>
-
-### → Docker Workflows
-
-#### `build-image.yml:`
-
-This workflow builds a docker image and pushes it to the Docker Container Registry.
-
-Example repositories, using this workflow:
-
-* [wayofdev/docker-node](https://github.com/wayofdev/docker-node)
-
-**Build image with "release" tag:**
-
-<details>
-<summary><code>.github/workflows/build-release.yml</code></summary>
-
-```yaml
----
-
-on:  # yamllint disable-line rule:truthy
-  release:
-    types:
-      - released
-
-name: 🚀 Build docker images with release tag
-
-jobs:
-  prepare:
-    runs-on: "ubuntu-latest"
-    outputs:
-      matrix: ${{ steps.matrix.outputs.matrix }}
-      version: ${{ steps.version.outputs.version }}
-    steps:
-      - name: ⚙️ Generate matrix
-        id: matrix
-        run: |
-          echo 'matrix={
-            "os_name": ["alpine"],
-            "php_version": ["8.1", "8.2"],
-            "php_type": ["fpm", "cli", "supervisord"]
-          }' | tr -d '\n' >> $GITHUB_OUTPUT
-
-      - name: ⚙️ Get version for image tag
-        id: version
-        run: |
-          version=${{ github.ref_name }}
-          version=${version#v}
-          echo "version=$version" >> $GITHUB_OUTPUT
-
-  build:
-    needs: prepare
-    strategy:
-      matrix: ${{ fromJson(needs.prepare.outputs.matrix )}}
-    uses: cycle/gh-actions/.github/workflows/build-image.yml@master
-    with:
-      os: "ubuntu-latest"
-      push-to-hub: true
-      image-namespace: "wayofdev/php-base"
-      image-template-path: "./dist/base"
-      image-template: ${{ matrix.php_version }}-${{ matrix.php_type }}-${{ matrix.os_name }}
-      image-version: ${{ needs.prepare.outputs.version }}
-    secrets:
-      docker-username: ${{ secrets.DOCKER_USERNAME }}
-      docker-password: ${{ secrets.DOCKER_TOKEN }}
-
-...
-```
-</details>
-
-Real-world examples can be found in the [`wayofdev/docker-node`](https://github.com/wayofdev/docker-node/blob/master/.github/workflows/build-release.yml) repository.
 
 <br>
 
@@ -407,12 +295,6 @@ You are more than welcome. Before contributing, kindly check our [contribution g
 
 - **Twitter (X):** Follow our organization [@SpiralScout](https://twitter.com/intent/follow?screen_name=SpiralScout).
 - **Discord:** Join our community on [Discord](https://discord.gg/spiralphp).
-
-<br>
-
-## 👨‍💻 Author Information
-
-Created in **2023** by [lotyp](https://github.com/wayofdev)
 
 <br>
 
