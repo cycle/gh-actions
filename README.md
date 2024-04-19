@@ -1,11 +1,13 @@
 <div align="center">
-<a href="https://cycle-orm.dev" target="_blank">
-    <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="https://github.com/cycle/.github/blob/main/logo/words-vector-dark.svg?raw=true">
-        <img width="50%" align="center" src="https://github.com/cycle/.github/blob/main/logo/words-vector-light.svg?raw=true">
-    </picture>
-</a>
+    <a href="https://cycle-orm.dev" target="_blank">
+        <picture>
+            <source media="(prefers-color-scheme: dark)" srcset="https://github.com/cycle/.github/blob/main/logo/words-vector-dark.svg?raw=true">
+            <img width="50%" align="center" src="https://github.com/cycle/.github/blob/main/logo/words-vector-light.svg?raw=true" alt="CycleORM Logo">
+        </picture>
+    </a>
 </div>
+
+<br>
 
 <br>
 
@@ -15,7 +17,7 @@
 [![Software License](https://img.shields.io/github/license/cycle/gh-actions.svg?style=flat-square&color=blue)](LICENSE.md)
 [![Commits since latest release](https://img.shields.io/github/commits-since/cycle/gh-actions/latest?style=flat-square)](https://github.com/cycle/gh-actions)
 [![Discord](https://img.shields.io/discord/538114875570913290?style=flat-square&logo=discord&labelColor=7289d9&logoColor=white&color=39456d)](https://discord.gg/spiralphp)
-[![Follow on Twitter](https://img.shields.io/twitter/follow/SpiralScout.svg?style=flat-square&logo=x&color=6e7781)](https://twitter.com/intent/follow?screen_name=SpiralScout)
+[![Twitter](https://img.shields.io/badge/-Twitter-black?style=flat-square&logo=X)](https://twitter.com/intent/follow?screen_name=SpiralPHP)
 
 </div>
 
@@ -67,9 +69,6 @@ Check each action's README file for detailed instructions on how to use it.
 | [`composer/get-root-version`](./actions/composer/get-root-version/README.md)       | determines the Composer root version based on the specified branch and exports it as env variable. |
 | [`composer/install`](./actions/composer/install/README.md)                         | Installs dependencies with Composer based on the specified dependency level.                       |
 | [`phive/install`](./actions/phive/install/README.md)                               | Install dependencies with [Phive](https://phar.io).                                                |
-| [`playwright/install`](./actions/playwright/install/README.md)                     | Installs [Playwright](https://playwright.dev/) along with its dependencies.                        |
-| [`pnpm/install`](./actions/pnpm/install/README.md)                                 | Installs mono-repository dependencies using [PNPM](https://pnpm.io/).                              |
-| [`s3/cache`](./actions/s3/cache/README.md)                                         | Cache artifacts, or restore them using S3.                                                         |
 
 <br>
 
@@ -181,115 +180,6 @@ Real-world examples can be found in the [`wayofdev/laravel-package-tpl`](https:/
 
 <br>
 
-#### `create-changesets-release.yml:`
-
-This workflow creates a release based on changesets. This workflow utilizes [changesets/action](https://github.com/changesets/action) to create a release based on changesets.
-
-Here is an example of how to use this workflow:
-
-<details>
-<summary><code>.github/workflows/create-changesets-release.yml</code></summary>
-
-```yaml
----
-on: # yamllint disable-line rule:truthy
-    push:
-        branches:
-            - master
-
-name: 🦋 Create release or publish to pnpm
-
-jobs:
-    release:
-        uses: cycle/gh-actions/.github/workflows/create-changesets-release.yml@master
-        with:
-            node: 18
-            repository: wayofdev/next-starter-tpl
-        secrets:
-            # to trigger other workflows, pass PAT token instead of GITHUB_TOKEN
-            token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
-            npm_token: ${{ secrets.NPM_TOKEN }}
-
-...
-```
-</details>
-
-Real-world examples can be found in the [`wayofdev/next-starter-tpl`](https://github.com/wayofdev/next-starter-tpl/blob/master/.github/workflows/create-changesets-release.yml) repository.
-
-<br>
-
-### → Docker Workflows
-
-#### `build-image.yml:`
-
-This workflow builds a docker image and pushes it to the Docker Container Registry.
-
-Example repositories, using this workflow:
-
-* [wayofdev/docker-node](https://github.com/wayofdev/docker-node)
-
-**Build image with "release" tag:**
-
-<details>
-<summary><code>.github/workflows/build-release.yml</code></summary>
-
-```yaml
----
-
-on:  # yamllint disable-line rule:truthy
-  release:
-    types:
-      - released
-
-name: 🚀 Build docker images with release tag
-
-jobs:
-  prepare:
-    runs-on: "ubuntu-latest"
-    outputs:
-      matrix: ${{ steps.matrix.outputs.matrix }}
-      version: ${{ steps.version.outputs.version }}
-    steps:
-      - name: ⚙️ Generate matrix
-        id: matrix
-        run: |
-          echo 'matrix={
-            "os_name": ["alpine"],
-            "php_version": ["8.1", "8.2"],
-            "php_type": ["fpm", "cli", "supervisord"]
-          }' | tr -d '\n' >> $GITHUB_OUTPUT
-
-      - name: ⚙️ Get version for image tag
-        id: version
-        run: |
-          version=${{ github.ref_name }}
-          version=${version#v}
-          echo "version=$version" >> $GITHUB_OUTPUT
-
-  build:
-    needs: prepare
-    strategy:
-      matrix: ${{ fromJson(needs.prepare.outputs.matrix )}}
-    uses: cycle/gh-actions/.github/workflows/build-image.yml@master
-    with:
-      os: "ubuntu-latest"
-      push-to-hub: true
-      image-namespace: "wayofdev/php-base"
-      image-template-path: "./dist/base"
-      image-template: ${{ matrix.php_version }}-${{ matrix.php_type }}-${{ matrix.os_name }}
-      image-version: ${{ needs.prepare.outputs.version }}
-    secrets:
-      docker-username: ${{ secrets.DOCKER_USERNAME }}
-      docker-password: ${{ secrets.DOCKER_TOKEN }}
-
-...
-```
-</details>
-
-Real-world examples can be found in the [`wayofdev/docker-node`](https://github.com/wayofdev/docker-node/blob/master/.github/workflows/build-release.yml) repository.
-
-<br>
-
 ### → Code Architecture
 
 #### `create-arch-diagram.yml:`
@@ -378,7 +268,7 @@ Real-world examples can be found in the [`wayofdev/laravel-package-tpl`](https:/
 
 ## 🤝 License
 
-[![Licence](https://img.shields.io/github/license/cycle/gh-actions?style=for-the-badge&color=blue)](./LICENSE)
+[![Licence](https://img.shields.io/github/license/cycle/gh-actions?style=for-the-badge&color=blue)](./LICENSE.md)
 
 <br>
 
@@ -403,20 +293,16 @@ You are more than welcome. Before contributing, kindly check our [contribution g
 
 ## 🌐 Social Links
 
-- **Twitter:** Follow our organization [@wayofdev](https://twitter.com/intent/follow?screen_name=wayofdev) and the author [@wlotyp](https://twitter.com/intent/follow?screen_name=wlotyp).
-- **Discord:** Join our community on [Discord](https://discord.gg/CE3TcCC5vr).
-
-<br>
-
-## 👨‍💻 Author Information
-
-Created in **2023** by [lotyp](https://github.com/wayofdev) @ [wayofdev](https://github.com/wayofdev)
+- **Twitter (X):** Follow our organization [@SpiralPHP](https://twitter.com/intent/follow?screen_name=SpiralPHP).
+- **Discord:** Join our community on [Discord](https://discord.gg/spiralphp).
 
 <br>
 
 ## 🧱 Useful Resources
 
 * [Composite Actions vs Reusable Workflows: what is the difference?](https://dev.to/n3wt0n/composite-actions-vs-reusable-workflows-what-is-the-difference-github-actions-11kd)
+
+* [wayofdev/gh-actions](https://github.com/wayofdev/gh-actions) — Upstream repository for the shared GitHub Actions.
 
 * [ergebnis/.github](https://github.com/ergebnis/.github) — Shareable actions of the [@ergebnis](https://github.com/ergebnis) organization.
 
