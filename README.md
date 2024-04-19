@@ -1,11 +1,13 @@
 <div align="center">
-<a href="https://cycle-orm.dev" target="_blank">
-    <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="https://github.com/cycle/.github/blob/main/logo/words-vector-dark.svg?raw=true">
-        <img width="50%" align="center" src="https://github.com/cycle/.github/blob/main/logo/words-vector-light.svg?raw=true">
-    </picture>
-</a>
+    <a href="https://cycle-orm.dev" target="_blank">
+        <picture>
+            <source media="(prefers-color-scheme: dark)" srcset="https://github.com/cycle/.github/blob/main/logo/words-vector-dark.svg?raw=true">
+            <img width="50%" align="center" src="https://github.com/cycle/.github/blob/main/logo/words-vector-light.svg?raw=true">
+        </picture>
+    </a>
 </div>
+
+<br>
 
 <br>
 
@@ -378,7 +380,7 @@ Real-world examples can be found in the [`wayofdev/laravel-package-tpl`](https:/
 
 ## 🤝 License
 
-[![Licence](https://img.shields.io/github/license/cycle/gh-actions?style=for-the-badge&color=blue)](./LICENSE)
+[![Licence](https://img.shields.io/github/license/cycle/gh-actions?style=for-the-badge&color=blue)](./LICENSE.md)
 
 <br>
 
@@ -403,20 +405,22 @@ You are more than welcome. Before contributing, kindly check our [contribution g
 
 ## 🌐 Social Links
 
-- **Twitter:** Follow our organization [@wayofdev](https://twitter.com/intent/follow?screen_name=wayofdev) and the author [@wlotyp](https://twitter.com/intent/follow?screen_name=wlotyp).
-- **Discord:** Join our community on [Discord](https://discord.gg/CE3TcCC5vr).
+- **Twitter (X):** Follow our organization [@SpiralScout](https://twitter.com/intent/follow?screen_name=SpiralScout).
+- **Discord:** Join our community on [Discord](https://discord.gg/spiralphp).
 
 <br>
 
 ## 👨‍💻 Author Information
 
-Created in **2023** by [lotyp](https://github.com/wayofdev) @ [wayofdev](https://github.com/wayofdev)
+Created in **2023** by [lotyp](https://github.com/wayofdev)
 
 <br>
 
 ## 🧱 Useful Resources
 
 * [Composite Actions vs Reusable Workflows: what is the difference?](https://dev.to/n3wt0n/composite-actions-vs-reusable-workflows-what-is-the-difference-github-actions-11kd)
+
+* [wayofdev/gh-actions](https://github.com/wayofdev/gh-actions) — Upstream repository for the shared GitHub Actions.
 
 * [ergebnis/.github](https://github.com/ergebnis/.github) — Shareable actions of the [@ergebnis](https://github.com/ergebnis) organization.
 
