@@ -90,7 +90,7 @@ lint-actions: ## Lint all github actions
 .PHONY: lint-actions
 
 lint-md: ## Lint all markdown files using markdownlint-cli2
-	@$(MARKDOWN_LINT_RUNNER) --fix "**/*.md" | tee -a $(MAKE_LOGFILE)
+	@$(MARKDOWN_LINT_RUNNER) --fix "**/*.md" "#CHANGELOG.md" | tee -a $(MAKE_LOGFILE)
 .PHONY: lint-md
 
 lint-md-dry: ## Lint all markdown files using markdownlint-cli2 in dry-run mode
