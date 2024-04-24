@@ -41,7 +41,6 @@ These tools encapsulate common and repetitive tasks, allowing for easy integrati
 - [Security Policy](#-security-policy)
 - [Contributing](#-want-to-contribute)
 - [Social Links](#-social-links)
-- [Author Information](#-author-information)
 - [Useful Resources](#-useful-resources)
 - [Contributors](#-contributors)
 
@@ -53,7 +52,7 @@ To use these workflows and actions, reference them directly from your project's 
 
 <br>
 
-## ⚙️ Composite Actions
+## 💻 Composite Actions
 
 Composite Actions are a powerful feature of GitHub Actions that allow you to create reusable actions using a combination of other actions, shell commands, or both.
 
@@ -72,7 +71,7 @@ Check each action's README file for detailed instructions on how to use it.
 
 <br>
 
-## ⚙️ Workflows
+## 💻 Workflows
 
 Read more about [reusing workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows).
 
@@ -84,7 +83,7 @@ Automatically applies labels to pull requests based on modified paths.
 
 This workflow triages pull requests and applies labels based on the paths that are modified in the pull request. This can help to categorize your pull requests and make it easier to identify the type of changes included.
 
-To use this workflow, set up a `.github/labeler.yml` file with your configuration in your project. For more information on how to configure the labeler, see: https://github.com/actions/labeler/blob/master/README.md
+To use this workflow, set up a `.github/labeler.yml` file with your configuration in your project. For more information on how to configure the labeler, see: <https://github.com/actions/labeler/blob/master/README.md>
 
 Here is an example of how to use this workflow:
 
@@ -133,6 +132,7 @@ jobs:
 
 ...
 ```
+
 </details>
 
 Real-world examples can be found in the [`wayofdev/laravel-package-tpl`](https://github.com/wayofdev/laravel-package-tpl/blob/master/.github/workflows/apply-labels.yml) repository.
@@ -174,6 +174,7 @@ jobs:
 
 ...
 ```
+
 </details>
 
 Real-world examples can be found in the [`wayofdev/laravel-package-tpl`](https://github.com/wayofdev/laravel-package-tpl/blob/master/.github/workflows/auto-merge-release.yml) repository.
@@ -221,6 +222,7 @@ jobs:
 
 ...
 ```
+
 </details>
 
 Real-world examples can be found in the [`wayofdev/laravel-package-tpl`](https://github.com/wayofdev/laravel-package-tpl/blob/master/.github/workflows/create-arch-diagram.yml) repository.
@@ -260,6 +262,7 @@ jobs:
 
 ...
 ```
+
 </details>
 
 Real-world examples can be found in the [`wayofdev/laravel-package-tpl`](https://github.com/wayofdev/laravel-package-tpl/blob/master/.github/workflows/shellcheck.yml) repository.
@@ -300,13 +303,13 @@ You are more than welcome. Before contributing, kindly check our [contribution g
 
 ## 🧱 Useful Resources
 
-* [Composite Actions vs Reusable Workflows: what is the difference?](https://dev.to/n3wt0n/composite-actions-vs-reusable-workflows-what-is-the-difference-github-actions-11kd)
+- [Composite Actions vs Reusable Workflows: what is the difference?](https://dev.to/n3wt0n/composite-actions-vs-reusable-workflows-what-is-the-difference-github-actions-11kd)
 
-* [wayofdev/gh-actions](https://github.com/wayofdev/gh-actions) — Upstream repository for the shared GitHub Actions.
+- [wayofdev/gh-actions](https://github.com/wayofdev/gh-actions) — Upstream repository for the shared GitHub Actions.
 
-* [ergebnis/.github](https://github.com/ergebnis/.github) — Shareable actions of the [@ergebnis](https://github.com/ergebnis) organization.
+- [ergebnis/.github](https://github.com/ergebnis/.github) — Shareable actions of the [@ergebnis](https://github.com/ergebnis) organization.
 
-* [skills/reusable-workflows](https://github.com/skills/reusable-workflows) — Reusable workflow examples
+- [skills/reusable-workflows](https://github.com/skills/reusable-workflows) — Reusable workflow examples
 
 <br>
 

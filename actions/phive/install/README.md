@@ -85,17 +85,17 @@ none
 - When `dependencies` is set to `"lowest"`, dependencies are installed in the directory specified by `working-directory` with
 
   ```bash
-  $ composer update --ansi --no-interaction --no-progress --prefer-lowest
+  composer update --ansi --no-interaction --no-progress --prefer-lowest
   ````
 
 - ```bash
-  $ composer install --ansi --no-interaction --no-progress
+  composer install --ansi --no-interaction --no-progress
   ```
 
 - When `dependencies` is set to `"highest"`, dependencies are installed in the directory specified by `working-directory` with
 
   ```bash
-  $ composer update --ansi --no-interaction --no-progress
+  composer update --ansi --no-interaction --no-progress
   ````
 
 <br>
