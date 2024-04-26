@@ -1,19 +1,18 @@
 <div align="center">
+    <br>
     <a href="https://cycle-orm.dev" target="_blank">
         <picture>
             <source media="(prefers-color-scheme: dark)" srcset="https://github.com/cycle/.github/blob/main/logo/words-vector-dark.svg?raw=true">
             <img width="50%" align="center" src="https://github.com/cycle/.github/blob/main/logo/words-vector-light.svg?raw=true" alt="CycleORM Logo">
         </picture>
     </a>
+    <br>
+    <br>
 </div>
-
-<br>
-
-<br>
 
 <div align="center">
 
-[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fwayofdev%2Fgh-actions%2Fbadge&style=flat-square)](https://github.com/cycle/gh-actions/actions)
+[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fcycle%2Fgh-actions%2Fbadge&style=flat-square)](https://github.com/cycle/gh-actions/actions)
 [![Software License](https://img.shields.io/github/license/cycle/gh-actions.svg?style=flat-square&color=blue)](LICENSE.md)
 [![Commits since latest release](https://img.shields.io/github/commits-since/cycle/gh-actions/latest?style=flat-square)](https://github.com/cycle/gh-actions)
 [![Discord](https://img.shields.io/discord/538114875570913290?style=flat-square&logo=discord&labelColor=7289d9&logoColor=white&color=39456d)](https://discord.gg/spiralphp)
@@ -23,9 +22,9 @@
 
 # Shared GitHub Actions
 
-This repository is a collection of [reusable workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows) and [composite actions](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action), specifically designed for use in [wayofdev](https://github.com/wayofdev) projects.
+This repository is a collection of [reusable workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows) and [composite actions](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action), specifically designed for use in [cycle](https://github.com/cycle) projects.
 
-These tools encapsulate common and repetitive tasks, allowing for easy integration into multiple projects. This approach not only reduces the need to rewrite code but also ensures standardized operations across all Wayofdev repositories.
+These tools encapsulate common and repetitive tasks, allowing for easy integration into multiple projects. This approach not only reduces the need to rewrite code but also ensures standardized operations across all Cycle repositories.
 
 <br>
 
@@ -269,12 +268,6 @@ Real-world examples can be found in the [`wayofdev/laravel-package-tpl`](https:/
 
 <br>
 
-## 🤝 License
-
-[![Licence](https://img.shields.io/github/license/cycle/gh-actions?style=for-the-badge&color=blue)](./LICENSE.md)
-
-<br>
-
 ## 🔒 Security Policy
 
 This project has a [security policy](.github/SECURITY.md).
@@ -283,7 +276,7 @@ This project has a [security policy](.github/SECURITY.md).
 
 ## 🙌 Want to Contribute?
 
-Thank you for considering contributing to the wayofdev community! We are open to all kinds of contributions. If you want to:
+Thank you for considering contributing to the cycle community! We are open to all kinds of contributions. If you want to:
 
 - 🤔 [Suggest a feature](https://github.com/cycle/gh-actions/issues/new?assignees=&labels=type%3A+enhancement&projects=&template=2-feature-request.yml&title=%5BFeature%5D%3A+)
 - 🐛 [Report an issue](https://github.com/cycle/gh-actions/issues/new?assignees=&labels=type%3A+documentation%2Ctype%3A+maintenance&projects=&template=1-bug-report.yml&title=%5BBug%5D%3A+)
@@ -301,6 +294,12 @@ You are more than welcome. Before contributing, kindly check our [contribution g
 
 <br>
 
+## 🫡 Contributors
+
+<a href="https://github.com/cycle/gh-actions/graphs/contributors" target="_blank"><img src="https://img.shields.io/github/contributors-anon/cycle/gh-actions?style=for-the-badge" alt="Contributors Badge"/></a>
+
+<br>
+
 ## 🧱 Useful Resources
 
 - [Composite Actions vs Reusable Workflows: what is the difference?](https://dev.to/n3wt0n/composite-actions-vs-reusable-workflows-what-is-the-difference-github-actions-11kd)
@@ -313,8 +312,8 @@ You are more than welcome. Before contributing, kindly check our [contribution g
 
 <br>
 
-## 🫡 Contributors
+## 🤝 License
 
-<img align="left" src="https://img.shields.io/github/contributors-anon/cycle/gh-actions?style=for-the-badge" alt="Contributors Badge"/>
+[![Licence](https://img.shields.io/github/license/cycle/gh-actions?style=for-the-badge&color=blue)](./LICENSE.md)
 
 <br>
