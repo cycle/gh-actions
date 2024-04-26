@@ -285,6 +285,8 @@ Thank you for considering contributing to the cycle community! We are open to al
 
 You are more than welcome. Before contributing, kindly check our [contribution guidelines](.github/CONTRIBUTING.md).
 
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg?style=for-the-badge)](https://conventionalcommits.org)
+
 <br>
 
 ## 🌐 Social Links
