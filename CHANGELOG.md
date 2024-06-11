@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.1.0](https://github.com/cycle/gh-actions/compare/v4.0.0...v4.1.0) (2024-06-11)
+
+
+### Features
+
+* markdown linter Makefile command and gh-action ([6e60616](https://github.com/cycle/gh-actions/commit/6e60616e319b2e55eb93b76efc15300ec8e67ebc))
+
+
+### Documentation
+
+* add conventional-commits badge ([1dd3a79](https://github.com/cycle/gh-actions/commit/1dd3a792a1043a9af2d0b13c2b9117f2ac1222e9))
+* add issue links ([ef67d3a](https://github.com/cycle/gh-actions/commit/ef67d3a18caa910154d158fa6a89886c3ad72997))
+* readme updates ([c9ba23c](https://github.com/cycle/gh-actions/commit/c9ba23c4ca84ef77c6084d802fc392a6bd7b88bc))
+
 ## [4.0.0](https://github.com/cycle/gh-actions/compare/v3.0.0...v4.0.0) (2024-04-19)
 
 
