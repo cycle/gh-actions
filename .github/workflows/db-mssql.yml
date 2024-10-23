@@ -1,0 +1,160 @@
+---
+
+name: DB:MSSQL
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        description: Os to test, separated by comma. Part of matrix.
+        required: false
+        type: string
+        default: '["ubuntu-latest"]'
+      php:
+        description: PHP versions to test, separated by comma. Part of matrix.
+        default: '["8.1","8.2","8.3"]'
+        required: false
+        type: string
+      stability:
+        description: Stability to test, separated by comma. Part of matrix.
+        required: false
+        type: string
+        default: '["prefer-stable"]'
+      odbc-version:
+        description: ODBC version.
+        default: '18'
+        required: false
+        type: string
+      options-flags:
+        description: MSSQL options flags.
+        default: '-C'
+        required: false
+        type: string
+      mssql-version:
+        description: MSSQL versions.
+        default: 2019-latest
+        required: false
+        type: string
+      mssql-password:
+        description: MSSQL password.
+        default: 'SSpaSS__1'
+        required: false
+        type: string
+      mssql-port:
+        description: MSSQL port.
+        default: '11433'
+        required: false
+        type: string
+      coverage:
+        description: Generate code coverage report.
+        default: pcov
+        required: false
+        type: string
+      extensions:
+        description: List of extensions to PHP.
+        default: pdo, pdo_sqlsrv
+        required: false
+        type: string
+      ini-values:
+        description: Initial values for PHP configuration.
+        default: date.timezone='UTC'
+        required: false
+        type: string
+      tools:
+        description: Tools to test, separated by comma.
+        default: composer:v2, pecl
+        required: false
+        type: string
+
+jobs:
+  tests:
+    name: PHP ${{ matrix.php }} MSSQL-${{ inputs.mssql-version }}
+
+    env:
+      key: cache
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ${{ fromJson(inputs.php) }}
+        os: ${{ fromJson(inputs.os) }}
+        stability: ${{ fromJson(inputs.stability) }}
+
+    services:
+      mssql:
+        image: mcr.microsoft.com/mssql/server:${{ inputs.mssql-version }}
+        env:
+          SA_PASSWORD: ${{ inputs.mssql-password }}
+          ACCEPT_EULA: Y
+          MSSQL_PID: Developer
+        ports:
+          - ${{ inputs.mssql-port }}:1433
+        options: --name=mssql --health-cmd="/opt/mssql-tools${{ inputs.odbc-version }}/bin/sqlcmd ${{ inputs.options-flags }} -S localhost -U SA -P '${{ inputs.mssql-password }}' -Q 'SELECT 1'" --health-interval=10s --health-timeout=5s --health-retries=5
+
+    steps:
+      # General Steps
+      - name: Set Git To Use LF
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure environment
+        run: |
+          export COMPOSER_ROOT_VERSION=$(/usr/bin/jq --null-input --raw-output 'first(inputs["extra"]["branch-alias"])[]' composer.json)
+          echo COMPOSER_ROOT_VERSION=$COMPOSER_ROOT_VERSION >> $GITHUB_ENV
+
+      - name: Setup PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          # PHP Extras
+          extensions: ${{ inputs.extensions }}
+          coverage: ${{ inputs.coverage }}
+          tools: ${{ inputs.tools }}
+          ini-values: ${{ inputs.ini-values }}
+
+      - name: Validate Composer
+        run: composer validate
+
+      - name: Get Composer Cache Directory
+        # Docs: <https://github.com/actions/cache/blob/master/examples.md#php---composer>
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Restore Composer Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-${{ matrix.php }}-composer-${{ hashFiles('**/composer.json') }}
+          restore-keys: ${{ runner.os }}-${{ matrix.php }}-composer
+
+      - name: Install dependencies with composer
+        if: matrix.php != '8.4'
+        run: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress --optimize-autoloader --ansi
+
+      - name: Install dependencies with composer php 8.3
+        if: matrix.php == '8.4'
+        run: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress --optimize-autoloader --ansi --ignore-platform-reqs
+
+      - name: Build test server
+        run: docker build --tag test-server:local -f ./tests/test-server/Dockerfile ./tests/test-server
+        if: ${{ inputs.test-server }}
+
+      - name: Run tests with phpunit without coverage
+        env:
+          DB: sqlserver
+        run: vendor/bin/phpunit --group driver-sqlserver --colors=always --coverage-clover=coverage.clover
+
+      - name: Upload Coverage To Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.clover
+          fail_ci_if_error: false
+
+...
