@@ -27,7 +27,7 @@ on:
         type: string
       mysql-password:
         description: MySQL password.
-        default: 'SSpaSS__1'
+        default: 'YourStrong!Passw0rd'
         required: false
         type: string
       mysql-port:

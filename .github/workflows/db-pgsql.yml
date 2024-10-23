@@ -27,7 +27,7 @@ on:
         type: string
       pgsql-password:
         description: Postgres password.
-        default: 'SSpaSS__1'
+        default: 'YourStrong!Passw0rd'
         required: false
         type: string
       pgsql-port:

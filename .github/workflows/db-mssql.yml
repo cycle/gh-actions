@@ -37,7 +37,7 @@ on:
         type: string
       mssql-password:
         description: MSSQL password.
-        default: 'SSpaSS__1'
+        default: 'YourStrong!Passw0rd'
         required: false
         type: string
       mssql-port:
