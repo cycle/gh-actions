@@ -1,6 +1,6 @@
 ---
 
-name: DB:MSSQL
+name: DB:MySQL
 
 on:
   workflow_call:
@@ -20,29 +20,19 @@ on:
         required: false
         type: string
         default: '["prefer-stable"]'
-      odbc-version:
-        description: ODBC version.
-        default: '18'
+      mysql-version:
+        description: MySQL versions.
+        default: 8.0
         required: false
         type: string
-      options-flags:
-        description: MSSQL options flags.
-        default: '-C'
-        required: false
-        type: string
-      mssql-version:
-        description: MSSQL versions.
-        default: 2019-latest
-        required: false
-        type: string
-      mssql-password:
-        description: MSSQL password.
+      mysql-password:
+        description: MySQL password.
         default: 'SSpaSS__1'
         required: false
         type: string
-      mssql-port:
-        description: MSSQL port.
-        default: '11433'
+      mysql-port:
+        description: MySQL port.
+        default: '13306'
         required: false
         type: string
       coverage:
@@ -52,7 +42,7 @@ on:
         type: string
       extensions:
         description: List of extensions to PHP.
-        default: pdo, pdo_sqlsrv
+        default: curl, intl, pdo, pdo_mysql
         required: false
         type: string
       ini-values:
@@ -68,7 +58,7 @@ on:
 
 jobs:
   tests:
-    name: PHP ${{ matrix.php }} MSSQL-${{ inputs.mssql-version }}
+    name: PHP ${{ matrix.php }} MySQL-${{ inputs.mysql-version }}
 
     env:
       key: cache
@@ -83,15 +73,15 @@ jobs:
         stability: ${{ fromJson(inputs.stability) }}
 
     services:
-      mssql:
-        image: mcr.microsoft.com/mssql/server:${{ inputs.mssql-version }}
+      mysql:
+        image: mysql:${{ inputs.mysql-version }}
         env:
-          SA_PASSWORD: ${{ inputs.mssql-password }}
-          ACCEPT_EULA: Y
-          MSSQL_PID: Developer
+          MYSQL_ROOT_PASSWORD: ${{ inputs.mysql-password }}
+          MYSQL_DATABASE: spiral
+          MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
         ports:
-          - ${{ inputs.mssql-port }}:1433
-        options: --name=mssql --health-cmd="/opt/mssql-tools${{ inputs.odbc-version }}/bin/sqlcmd ${{ inputs.options-flags }} -S localhost -U SA -P '${{ inputs.mssql-password }}' -Q 'SELECT 1'" --health-interval=10s --health-timeout=5s --health-retries=5
+          - ${{ inputs.mysql-port }}:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
       # General Steps
@@ -147,8 +137,9 @@ jobs:
 
       - name: Run tests with phpunit without coverage
         env:
-          DB: sqlserver
-        run: vendor/bin/phpunit --group driver-sqlserver --colors=always --coverage-clover=coverage.clover
+          DB: mysql
+          MYSQL: ${{ inputs.mysql-version }}
+        run: vendor/bin/phpunit --group driver-mysql --colors=always
 
       - name: Upload Coverage To Codecov
         uses: codecov/codecov-action@v1
