@@ -21,7 +21,7 @@ on:
         type: string
         default: '["prefer-stable"]'
       mysql-version:
-        description: MySQL versions.
+        description: MySQL version.
         default: 8.0
         required: false
         type: string
@@ -139,7 +139,7 @@ jobs:
         env:
           DB: mysql
           MYSQL: ${{ inputs.mysql-version }}
-        run: vendor/bin/phpunit --group driver-mysql --colors=always
+        run: vendor/bin/phpunit --group driver-mysql --colors=always --coverage-clover=coverage.clover
 
       - name: Upload Coverage To Codecov
         uses: codecov/codecov-action@v1
