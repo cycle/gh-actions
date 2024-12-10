@@ -12,7 +12,7 @@ on:
         default: '["ubuntu-latest"]'
       php:
         description: PHP versions to test, separated by comma. Part of matrix.
-        default: '["8.0","8.1","8.2","8.3"]'
+        default: '["8.0","8.1","8.2","8.3","8.4"]'
         required: false
         type: string
       stability:
