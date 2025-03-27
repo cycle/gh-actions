@@ -24,6 +24,9 @@ name: 🏷️ Add labels
 
 jobs:
   label:
+    permissions:
+      contents: read
+      pull-requests: write
     runs-on: ${{ inputs.os }}
     steps:
       - name: 🏷️ Apply labels
