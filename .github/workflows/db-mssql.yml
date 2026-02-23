@@ -9,7 +9,7 @@ on:
         description: Os to test, separated by comma. Part of matrix.
         required: false
         type: string
-        default: '["ubuntu-22.04"]'
+        default: '["ubuntu-latest"]'
       php:
         description: PHP versions to test, separated by comma. Part of matrix.
         default: '["8.0","8.1","8.2","8.3","8.4","8.5"]'
@@ -32,7 +32,7 @@ on:
         type: string
       mssql-version:
         description: MSSQL version.
-        default: 2019-latest
+        default: 2022-latest
         required: false
         type: string
       mssql-password:
@@ -81,6 +81,9 @@ jobs:
         php: ${{ fromJson(inputs.php) }}
         os: ${{ fromJson(inputs.os) }}
         stability: ${{ fromJson(inputs.stability) }}
+        include:
+          - php: "8.5"
+            mssql-version: "2019-latest"
 
     services:
       mssql:
@@ -97,6 +100,8 @@ jobs:
       - name: Install ODBC driver.
         run: |
           sudo curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list
+          sudo apt-get clean
+          sudo apt-get update
           sudo ACCEPT_EULA=Y apt-get install -y msodbcsql${{ inputs.odbc-version }}
 
       # General Steps
