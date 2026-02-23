@@ -9,7 +9,7 @@ on:
         description: Os to test, separated by comma. Part of matrix.
         required: false
         type: string
-        default: '["ubuntu-latest"]'
+        default: '["ubuntu-22.04"]'
       php:
         description: PHP versions to test, separated by comma. Part of matrix.
         default: '["8.0","8.1","8.2","8.3","8.4","8.5"]'
@@ -139,11 +139,11 @@ jobs:
           restore-keys: ${{ runner.os }}-${{ matrix.php }}-composer
 
       - name: Install dependencies with composer
-        if: matrix.php != '8.4'
+        if: matrix.php != '8.5'
         run: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress --optimize-autoloader --ansi
 
-      - name: Install dependencies with composer php 8.4
-        if: matrix.php == '8.4'
+      - name: Install dependencies with composer and latest PHP version
+        if: matrix.php == '8.5'
         run: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress --optimize-autoloader --ansi --ignore-platform-reqs
 
       - name: Build test server
