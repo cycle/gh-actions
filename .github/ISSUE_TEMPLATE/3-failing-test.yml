@@ -5,9 +5,6 @@ description: Report failing tests or CI jobs.
 title: '[Test]: '
 labels: ['Type: Test']
 
-assignees:
-  - lotyp
-
 body:
   - type: markdown
     attributes:
