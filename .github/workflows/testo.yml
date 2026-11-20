@@ -76,9 +76,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     outputs:
-      unit: ${{ steps.matrix.outputs.unit }}
-      server: ${{ steps.matrix.outputs.server }}
-      title: ${{ steps.matrix.outputs.title }}
+      matrix: ${{ steps.matrix.outputs.matrix }}
     steps:
       - name: 🧮 Build the matrix
         id: matrix
@@ -116,105 +114,28 @@ jobs:
             | if $bad != [] or $deps == [] then error("dependencies must be a non-empty subset of highest, lowest") else . end
             | ($php | vsort) as $all
             | ($server // [$all[0], $all[-1]]) as $server
-            | {
-                unit: [cells($php)[] | . + {extensions: ext("sqlite")}],
-                server: [
-                  $drivers[] | select(. != "sqlite") as $d
+            | (if $drivers | index("sqlite") then "Unit + SQLite" else "Unit" end) as $unitTitle
+            | [
+                (cells($php)[] | . + {driver: "", extensions: ext("sqlite"), title: $unitTitle}),
+                ($drivers[] | select(. != "sqlite") as $d
                   | cells($server)[]
                   | . + {driver: $d, extensions: ext($d),
-                         title: {mysql: "MySQL", postgres: "Postgres", sqlserver: "SQLServer"}[$d]}
-                ],
-                title: (if $drivers | index("sqlite") then "Unit + SQLite" else "Unit" end)
-              }')
-          {
-            echo "unit=$(jq -c .unit <<< "$matrix")"
-            echo "server=$(jq -c .server <<< "$matrix")"
-            echo "title=$(jq -r .title <<< "$matrix")"
-          } >> "$GITHUB_OUTPUT"
+                         title: {mysql: "MySQL", postgres: "Postgres", sqlserver: "SQLServer"}[$d]})
+              ]
+            | map(. + {name: "\(.title) · PHP \(.php) · \(.dependencies)"})')
+          echo "matrix=$(jq -c . <<< "$matrix")" >> "$GITHUB_OUTPUT"
           jq . <<< "$matrix"
 
-  unit:
-    name: ${{ needs.prepare.outputs.title }} · PHP ${{ matrix.php }} · ${{ matrix.dependencies }}
+  test:
+    # One matrix for every run: the names come from the prepare job, so no skipped job shows an unexpanded name.
+    name: ${{ matrix.name }}
     needs: prepare
     runs-on: ${{ inputs.os }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(needs.prepare.outputs.unit) }}
-    steps:
-      - name: 📦 Check out the codebase
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-
-      - name: 🛠️ Setup PHP ${{ matrix.php }}
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          extensions: ${{ matrix.extensions }}
-          ini-values: ${{ inputs.ini-values }}
-          coverage: ${{ matrix.coverage && 'pcov' || 'none' }}
-
-      - name: 🛠️ Set COMPOSER_ROOT_VERSION
-        if: inputs.composer-root-version != ''
-        env:
-          VERSION: ${{ inputs.composer-root-version }}
-        run: echo "COMPOSER_ROOT_VERSION=$VERSION" >> "$GITHUB_ENV"
-
-      - name: 📥 Install dependencies with composer
-        id: install
-        uses: ramsey/composer-install@v4
-        with:
-          dependency-versions: ${{ matrix.dependencies }}
-          composer-options: ${{ inputs.composer-options }}
-
-      - name: 🧪 Unit tests
-        env:
-          COVERAGE: ${{ matrix.coverage }}
-        run: |
-          args=()
-          [ "$COVERAGE" = true ] && args=(-- --coverage-clover=runtime/clover-unit.xml)
-          composer test:unit "${args[@]}"
-
-      - name: 🧪 SQLite tests
-        # Runs after a failed Unit step too: the two suites fail for different reasons.
-        if: ${{ !cancelled() && steps.install.outcome == 'success' && contains(fromJSON(inputs.drivers), 'sqlite') }}
-        env:
-          COVERAGE: ${{ matrix.coverage }}
-        run: |
-          args=()
-          [ "$COVERAGE" = true ] && args=(-- --coverage-clover=runtime/clover-sqlite.xml)
-          composer test:sqlite "${args[@]}"
-
-      - name: 📤 Upload Unit coverage to Codecov
-        if: ${{ !cancelled() && matrix.coverage && hashFiles('runtime/clover-unit.xml') != '' }}
-        continue-on-error: true
-        uses: codecov/codecov-action@v7
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: runtime/clover-unit.xml
-          flags: unit
-
-      - name: 📤 Upload SQLite coverage to Codecov
-        if: ${{ !cancelled() && matrix.coverage && hashFiles('runtime/clover-sqlite.xml') != '' }}
-        continue-on-error: true
-        uses: codecov/codecov-action@v7
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: runtime/clover-sqlite.xml
-          flags: sqlite
-
-  server:
-    name: ${{ matrix.title }} · PHP ${{ matrix.php }} · ${{ matrix.dependencies }}
-    needs: prepare
-    if: needs.prepare.outputs.server != '[]'
-    runs-on: ${{ inputs.os }}
-    timeout-minutes: ${{ inputs.timeout-minutes }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include: ${{ fromJSON(needs.prepare.outputs.server) }}
+        include: ${{ fromJSON(needs.prepare.outputs.matrix) }}
     steps:
       - name: 📦 Check out the codebase
         uses: actions/checkout@v7
@@ -243,15 +164,37 @@ jobs:
         run: echo "COMPOSER_ROOT_VERSION=$VERSION" >> "$GITHUB_ENV"
 
       - name: 📥 Install dependencies with composer
+        id: install
         uses: ramsey/composer-install@v4
         with:
           dependency-versions: ${{ matrix.dependencies }}
           composer-options: ${{ inputs.composer-options }}
 
+      - name: 🧪 Unit tests
+        if: matrix.driver == ''
+        env:
+          COVERAGE: ${{ matrix.coverage }}
+        run: |
+          args=()
+          [ "$COVERAGE" = true ] && args=(-- --coverage-clover=runtime/clover-unit.xml)
+          composer test:unit "${args[@]}"
+
+      - name: 🧪 SQLite tests
+        # Runs after a failed Unit step too: the two suites fail for different reasons.
+        if: ${{ !cancelled() && matrix.driver == '' && steps.install.outcome == 'success' && contains(fromJSON(inputs.drivers), 'sqlite') }}
+        env:
+          COVERAGE: ${{ matrix.coverage }}
+        run: |
+          args=()
+          [ "$COVERAGE" = true ] && args=(-- --coverage-clover=runtime/clover-sqlite.xml)
+          composer test:sqlite "${args[@]}"
+
       - name: 🛢️ Start ${{ matrix.title }}
+        if: matrix.driver != ''
         run: composer db:up -- ${{ matrix.driver }}
 
       - name: 🧪 ${{ matrix.title }} tests
+        if: matrix.driver != ''
         env:
           COVERAGE: ${{ matrix.coverage }}
           DRIVER: ${{ matrix.driver }}
@@ -260,8 +203,26 @@ jobs:
           [ "$COVERAGE" = true ] && args=(-- "--coverage-clover=runtime/clover-$DRIVER.xml")
           composer "test:$DRIVER" "${args[@]}"
 
-      - name: 📤 Upload coverage to Codecov
-        if: ${{ !cancelled() && matrix.coverage && hashFiles(format('runtime/clover-{0}.xml', matrix.driver)) != '' }}
+      - name: 📤 Upload Unit coverage to Codecov
+        if: ${{ !cancelled() && matrix.coverage && matrix.driver == '' && hashFiles('runtime/clover-unit.xml') != '' }}
+        continue-on-error: true
+        uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: runtime/clover-unit.xml
+          flags: unit
+
+      - name: 📤 Upload SQLite coverage to Codecov
+        if: ${{ !cancelled() && matrix.coverage && matrix.driver == '' && hashFiles('runtime/clover-sqlite.xml') != '' }}
+        continue-on-error: true
+        uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: runtime/clover-sqlite.xml
+          flags: sqlite
+
+      - name: 📤 Upload ${{ matrix.title }} coverage to Codecov
+        if: ${{ !cancelled() && matrix.coverage && matrix.driver != '' && hashFiles(format('runtime/clover-{0}.xml', matrix.driver)) != '' }}
         continue-on-error: true
         uses: codecov/codecov-action@v7
         with:
