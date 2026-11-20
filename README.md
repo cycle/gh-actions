@@ -333,6 +333,7 @@ permissions:
 
 jobs:
   testo:
+    name: Testo
     uses: cycle/gh-actions/.github/workflows/testo.yml@master
     with:
       coverage: true
