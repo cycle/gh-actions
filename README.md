@@ -348,6 +348,59 @@ A package without database tests passes `drivers: '[]'`; a package that `cycle/t
 
 Real-world example: [`cycle/testing`](https://github.com/cycle/testing/blob/1.x/.github/workflows/testing.yml).
 
+#### `infection.yml:`
+
+Runs mutation testing with [Infection](https://infection.github.io) through [`testo/bridge-infection`](https://github.com/php-testo/bridge-infection) and uploads the report to the [Stryker dashboard](https://dashboard.stryker-mutator.io).
+
+The package keeps Infection in `vendor-bin/infection` (installed with `composer bin infection install`) and defines an `infect:ci` composer script; the suites, the thresholds and the report branch live in its `infection.json`. The report goes to the dashboard only on push, so a pull request never overwrites the branch report and needs no secret.
+
+| Input                   | Default                                  | Description                                                    |
+|-------------------------|------------------------------------------|----------------------------------------------------------------|
+| `php`                   | `8.4`                                    | PHP version.                                                   |
+| `coverage`              | `xdebug`                                 | Coverage driver for Infection: `xdebug` or `pcov`.             |
+| `extensions`            |                                          | PHP extensions on top of `pdo`, `pdo_sqlite` and `mbstring`.   |
+| `ini-values`            | `error_reporting=E_ALL, memory_limit=-1` | PHP ini values.                                                |
+| `composer-root-version` |                                          | `COMPOSER_ROOT_VERSION`, as in `testo.yml`.                    |
+| `composer-options`      |                                          | Extra options for `composer update`.                           |
+| `os`                    | `ubuntu-latest`                          | Runner.                                                        |
+| `timeout-minutes`       | `30`                                     | Timeout of the job.                                            |
+
+The optional secret `STRYKER_DASHBOARD_API_KEY` reaches the workflow through `secrets: inherit`.
+
+<details>
+<summary><code>.github/workflows/infection.yml</code></summary>
+
+```yaml
+---
+
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+  push:
+    branches:
+      - 1.x
+
+name: 🧬 Mutation Tests
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  infection:
+    name: Infection
+    uses: cycle/gh-actions/.github/workflows/infection.yml@master
+    secrets: inherit
+
+...
+```
+
+</details>
+
+Real-world example: [`cycle/transaction`](https://github.com/cycle/transaction/blob/1.x/.github/workflows/infection.yml).
+
 <br>
 
 ## 🔒 Security Policy

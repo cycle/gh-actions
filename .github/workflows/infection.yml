@@ -1,0 +1,95 @@
+---
+
+name: Infection
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      php:
+        description: PHP version.
+        default: '8.4'
+        required: false
+        type: string
+      coverage:
+        description: Coverage driver for Infection (xdebug or pcov).
+        default: xdebug
+        required: false
+        type: string
+      extensions:
+        description: PHP extensions on top of pdo, pdo_sqlite and mbstring.
+        default: ''
+        required: false
+        type: string
+      ini-values:
+        description: PHP ini values.
+        default: error_reporting=E_ALL, memory_limit=-1
+        required: false
+        type: string
+      composer-root-version:
+        description: COMPOSER_ROOT_VERSION, for a package that a dependency requires back (e.g. 2.x-dev).
+        default: ''
+        required: false
+        type: string
+      composer-options:
+        description: Extra options for composer update.
+        default: ''
+        required: false
+        type: string
+      os:
+        description: Runner.
+        default: ubuntu-latest
+        required: false
+        type: string
+      timeout-minutes:
+        description: Timeout of the job.
+        default: 30
+        required: false
+        type: number
+    secrets:
+      STRYKER_DASHBOARD_API_KEY:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  infection:
+    name: PHP ${{ inputs.php }}
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    steps:
+      - name: 📦 Check out the codebase
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: 🛠️ Setup PHP ${{ inputs.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.php }}
+          extensions: pdo, pdo_sqlite, mbstring${{ inputs.extensions != '' && format(', {0}', inputs.extensions) || '' }}
+          ini-values: ${{ inputs.ini-values }}
+          coverage: ${{ inputs.coverage }}
+
+      - name: 🛠️ Set COMPOSER_ROOT_VERSION
+        if: inputs.composer-root-version != ''
+        env:
+          VERSION: ${{ inputs.composer-root-version }}
+        run: echo "COMPOSER_ROOT_VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: 📥 Install dependencies with composer
+        uses: ramsey/composer-install@v4
+        with:
+          dependency-versions: highest
+          composer-options: ${{ inputs.composer-options }}
+
+      - name: 📥 Install Infection
+        run: composer bin infection install --no-interaction --no-progress
+
+      - name: 🧬 Run mutation testing with Infection
+        run: composer infect:ci
+        env:
+          # A pull request gets an empty key, so its run never overwrites the branch report on the dashboard.
+          STRYKER_DASHBOARD_API_KEY: ${{ github.event_name == 'push' && secrets.STRYKER_DASHBOARD_API_KEY || '' }}
+
+...
