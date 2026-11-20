@@ -1,0 +1,272 @@
+---
+
+name: Testo
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      php:
+        description: PHP versions (JSON list). Unit and SQLite tests run on each of them.
+        default: '["8.2","8.3","8.4","8.5","8.6"]'
+        required: false
+        type: string
+      server-php:
+        description: PHP versions (JSON list) for the server drivers. Empty means the lowest and the highest of `php`.
+        default: ''
+        required: false
+        type: string
+      drivers:
+        description: Database drivers (JSON list of sqlite, mysql, postgres, sqlserver). An empty list runs the Unit suite only.
+        default: '["sqlite","mysql","postgres","sqlserver"]'
+        required: false
+        type: string
+      dependencies:
+        description: Composer dependency versions (JSON list of highest, lowest). Highest runs on every PHP version, lowest on the lowest one.
+        default: '["highest","lowest"]'
+        required: false
+        type: string
+      coverage:
+        description: Collect coverage with pcov on the highest PHP version and upload it to Codecov with one flag per suite (unit, sqlite, mysql, postgres, sqlserver).
+        default: false
+        required: false
+        type: boolean
+      extensions:
+        description: PHP extensions on top of pdo, pdo_sqlite, mbstring and the driver's PDO extension.
+        default: ''
+        required: false
+        type: string
+      ini-values:
+        description: PHP ini values.
+        default: error_reporting=E_ALL, memory_limit=-1
+        required: false
+        type: string
+      composer-root-version:
+        description: COMPOSER_ROOT_VERSION, for a package that a dependency requires back (e.g. 2.x-dev).
+        default: ''
+        required: false
+        type: string
+      composer-options:
+        description: Extra options for composer update.
+        default: ''
+        required: false
+        type: string
+      os:
+        description: Runner. Server drivers run their databases in Docker, so it has to be a Linux runner.
+        default: ubuntu-latest
+        required: false
+        type: string
+      timeout-minutes:
+        description: Timeout of each test job.
+        default: 20
+        required: false
+        type: number
+    secrets:
+      CODECOV_TOKEN:
+        required: false
+
+permissions:
+  contents: read
+
+env:
+  DB_REQUIRED: 1
+
+jobs:
+  prepare:
+    name: Build the matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      unit: ${{ steps.matrix.outputs.unit }}
+      server: ${{ steps.matrix.outputs.server }}
+      title: ${{ steps.matrix.outputs.title }}
+    steps:
+      - name: 🧮 Build the matrix
+        id: matrix
+        env:
+          PHP: ${{ inputs.php }}
+          SERVER_PHP: ${{ inputs.server-php }}
+          DRIVERS: ${{ inputs.drivers }}
+          DEPENDENCIES: ${{ inputs.dependencies }}
+          EXTENSIONS: ${{ inputs.extensions }}
+          COVERAGE: ${{ inputs.coverage }}
+        run: |
+          set -euo pipefail
+          matrix=$(jq -n -c \
+            --argjson php "$PHP" \
+            --argjson server "${SERVER_PHP:-null}" \
+            --argjson drivers "$DRIVERS" \
+            --argjson deps "$DEPENDENCIES" \
+            --argjson coverage "$COVERAGE" \
+            --arg extensions "$EXTENSIONS" '
+            def vsort: unique | sort_by(split(".") | map(tonumber));
+            def ext($driver):
+              (["pdo", "pdo_sqlite", "mbstring"]
+                + ({mysql: ["pdo_mysql"], postgres: ["pdo_pgsql"], sqlserver: ["pdo_sqlsrv"]}[$driver] // [])
+                + [$extensions | select(. != "")]) | join(", ");
+            def cells($versions):
+              ($versions | vsort) as $v
+              | [($v[] | select($deps | index("highest")) | {php: ., dependencies: "highest"}),
+                 ($v[0] | select($deps | index("lowest")) | {php: ., dependencies: "lowest"})]
+              | (map(select(.dependencies == "highest")) | last // null) as $top
+              | (if $top == null then .[0] else $top end) as $cov
+              | map(. + {coverage: ($coverage and . == $cov)});
+            ($drivers - ["sqlite", "mysql", "postgres", "sqlserver"]) as $unknown
+            | if $unknown != [] then error("Unknown drivers: \($unknown | join(", "))") else . end
+            | ($deps - ["highest", "lowest"]) as $bad
+            | if $bad != [] or $deps == [] then error("dependencies must be a non-empty subset of highest, lowest") else . end
+            | ($php | vsort) as $all
+            | ($server // [$all[0], $all[-1]]) as $server
+            | {
+                unit: [cells($php)[] | . + {extensions: ext("sqlite")}],
+                server: [
+                  $drivers[] | select(. != "sqlite") as $d
+                  | cells($server)[]
+                  | . + {driver: $d, extensions: ext($d),
+                         title: {mysql: "MySQL", postgres: "Postgres", sqlserver: "SQLServer"}[$d]}
+                ],
+                title: (if $drivers | index("sqlite") then "Unit + SQLite" else "Unit" end)
+              }')
+          {
+            echo "unit=$(jq -c .unit <<< "$matrix")"
+            echo "server=$(jq -c .server <<< "$matrix")"
+            echo "title=$(jq -r .title <<< "$matrix")"
+          } >> "$GITHUB_OUTPUT"
+          jq . <<< "$matrix"
+
+  unit:
+    name: ${{ needs.prepare.outputs.title }} · PHP ${{ matrix.php }} · ${{ matrix.dependencies }}
+    needs: prepare
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.prepare.outputs.unit) }}
+    steps:
+      - name: 📦 Check out the codebase
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: 🛠️ Setup PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ matrix.extensions }}
+          ini-values: ${{ inputs.ini-values }}
+          coverage: ${{ matrix.coverage && 'pcov' || 'none' }}
+
+      - name: 🛠️ Set COMPOSER_ROOT_VERSION
+        if: inputs.composer-root-version != ''
+        env:
+          VERSION: ${{ inputs.composer-root-version }}
+        run: echo "COMPOSER_ROOT_VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: 📥 Install dependencies with composer
+        id: install
+        uses: ramsey/composer-install@v4
+        with:
+          dependency-versions: ${{ matrix.dependencies }}
+          composer-options: ${{ inputs.composer-options }}
+
+      - name: 🧪 Unit tests
+        env:
+          COVERAGE: ${{ matrix.coverage }}
+        run: |
+          args=()
+          [ "$COVERAGE" = true ] && args=(-- --coverage-clover=runtime/clover-unit.xml)
+          composer test:unit "${args[@]}"
+
+      - name: 🧪 SQLite tests
+        # Runs after a failed Unit step too: the two suites fail for different reasons.
+        if: ${{ !cancelled() && steps.install.outcome == 'success' && contains(fromJSON(inputs.drivers), 'sqlite') }}
+        env:
+          COVERAGE: ${{ matrix.coverage }}
+        run: |
+          args=()
+          [ "$COVERAGE" = true ] && args=(-- --coverage-clover=runtime/clover-sqlite.xml)
+          composer test:sqlite "${args[@]}"
+
+      - name: 📤 Upload Unit coverage to Codecov
+        if: ${{ !cancelled() && matrix.coverage && hashFiles('runtime/clover-unit.xml') != '' }}
+        continue-on-error: true
+        uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: runtime/clover-unit.xml
+          flags: unit
+
+      - name: 📤 Upload SQLite coverage to Codecov
+        if: ${{ !cancelled() && matrix.coverage && hashFiles('runtime/clover-sqlite.xml') != '' }}
+        continue-on-error: true
+        uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: runtime/clover-sqlite.xml
+          flags: sqlite
+
+  server:
+    name: ${{ matrix.title }} · PHP ${{ matrix.php }} · ${{ matrix.dependencies }}
+    needs: prepare
+    if: needs.prepare.outputs.server != '[]'
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.prepare.outputs.server) }}
+    steps:
+      - name: 📦 Check out the codebase
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: 🛠️ Install the Microsoft ODBC driver
+        if: matrix.driver == 'sqlserver'
+        run: |
+          curl -fsSL "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list" | sudo tee /etc/apt/sources.list.d/mssql-release.list
+          sudo apt-get update
+          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18
+
+      - name: 🛠️ Setup PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ matrix.extensions }}
+          ini-values: ${{ inputs.ini-values }}
+          coverage: ${{ matrix.coverage && 'pcov' || 'none' }}
+
+      - name: 🛠️ Set COMPOSER_ROOT_VERSION
+        if: inputs.composer-root-version != ''
+        env:
+          VERSION: ${{ inputs.composer-root-version }}
+        run: echo "COMPOSER_ROOT_VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: 📥 Install dependencies with composer
+        uses: ramsey/composer-install@v4
+        with:
+          dependency-versions: ${{ matrix.dependencies }}
+          composer-options: ${{ inputs.composer-options }}
+
+      - name: 🛢️ Start ${{ matrix.title }}
+        run: composer db:up -- ${{ matrix.driver }}
+
+      - name: 🧪 ${{ matrix.title }} tests
+        env:
+          COVERAGE: ${{ matrix.coverage }}
+          DRIVER: ${{ matrix.driver }}
+        run: |
+          args=()
+          [ "$COVERAGE" = true ] && args=(-- "--coverage-clover=runtime/clover-$DRIVER.xml")
+          composer "test:$DRIVER" "${args[@]}"
+
+      - name: 📤 Upload coverage to Codecov
+        if: ${{ !cancelled() && matrix.coverage && hashFiles(format('runtime/clover-{0}.xml', matrix.driver)) != '' }}
+        continue-on-error: true
+        uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: runtime/clover-${{ matrix.driver }}.xml
+          flags: ${{ matrix.driver }}
+
+...

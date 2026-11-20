@@ -36,6 +36,7 @@ These tools encapsulate common and repetitive tasks, allowing for easy integrati
   - [Auto Label and Release Management](#-auto-label-and-release-management)
   - [Code Architecture](#-code-architecture)
   - [Static Analysis](#-static-analysis)
+  - [Testing](#-testing)
 - [License](#-license)
 - [Security Policy](#-security-policy)
 - [Contributing](#-want-to-contribute)
@@ -265,6 +266,86 @@ jobs:
 </details>
 
 Real-world examples can be found in the [`wayofdev/laravel-package-tpl`](https://github.com/wayofdev/laravel-package-tpl/blob/master/.github/workflows/shellcheck.yml) repository.
+
+<br>
+
+### → Testing
+
+#### `testo.yml:`
+
+Runs the tests of a Cycle package built on [Testo](https://github.com/php-testo/testo) and [`cycle/testing`](https://github.com/cycle/testing). The PHP versions and the database drivers for the whole organisation are set here, so a caller passes only what differs.
+
+The workflow calls the package's composer scripts and never passes Testo flags of its own, so a CI run is the same command as a local one:
+
+| Script                                 | Used by                                                  |
+|----------------------------------------|----------------------------------------------------------|
+| `test:unit`                            | the `unit` job, on every PHP version                     |
+| `test:sqlite`                          | the `unit` job, after the Unit suite, when `sqlite` is listed |
+| `test:mysql`, `test:postgres`, `test:sqlserver` | one `server` job per driver                     |
+| `db:up`                                | `composer db:up -- <driver>` starts the database from the compose file of `cycle/testing` |
+
+Every job runs with `DB_REQUIRED=1`, so an unreachable database fails the run instead of skipping its tests.
+
+The matrix:
+
+- `unit` (Unit and SQLite): every version of `php` with `highest` dependencies, plus the lowest version with `lowest` dependencies.
+- `server` (MySQL, Postgres, SQLServer): the same for `server-php`, which defaults to the lowest and the highest version of `php`.
+- With `coverage: true`, the highest PHP version with `highest` dependencies collects coverage with pcov and uploads it to Codecov with one flag per suite: `unit`, `sqlite`, `mysql`, `postgres`, `sqlserver`.
+
+| Input                   | Default                                       | Description                                                                         |
+|-------------------------|-----------------------------------------------|-------------------------------------------------------------------------------------|
+| `php`                   | `["8.2","8.3","8.4","8.5","8.6"]`             | PHP versions (JSON list).                                                           |
+| `server-php`            | lowest and highest of `php`                   | PHP versions (JSON list) for MySQL, Postgres and SQLServer.                         |
+| `drivers`               | `["sqlite","mysql","postgres","sqlserver"]`   | Drivers to test (JSON list). `[]` runs the Unit suite only.                         |
+| `dependencies`          | `["highest","lowest"]`                        | Composer dependency versions (JSON list).                                           |
+| `coverage`              | `false`                                       | Collect coverage and upload it to Codecov.                                          |
+| `extensions`            |                                               | PHP extensions on top of `pdo`, `pdo_sqlite`, `mbstring` and the driver's PDO extension. |
+| `ini-values`            | `error_reporting=E_ALL, memory_limit=-1`      | PHP ini values.                                                                     |
+| `composer-root-version` |                                               | `COMPOSER_ROOT_VERSION`, for a package that a dependency requires back (`cycle/database` → `2.x-dev`). |
+| `composer-options`      |                                               | Extra options for `composer update`.                                                |
+| `os`                    | `ubuntu-latest`                               | Runner; a Linux one, as the databases run in Docker.                                |
+| `timeout-minutes`       | `20`                                          | Timeout of each test job.                                                           |
+
+The optional secret `CODECOV_TOKEN` reaches the workflow through `secrets: inherit`.
+
+Here is an example of how to use this workflow:
+
+<details>
+<summary><code>.github/workflows/testing.yml</code></summary>
+
+```yaml
+---
+
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+  push:
+    branches:
+      - 2.x
+
+name: 🧪 Tests
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  testo:
+    uses: cycle/gh-actions/.github/workflows/testo.yml@master
+    with:
+      coverage: true
+    secrets: inherit
+
+...
+```
+
+</details>
+
+A package without database tests passes `drivers: '[]'`; a package that `cycle/testing` requires back, such as `cycle/database`, passes `composer-root-version: 2.x-dev`.
+
+Real-world example: [`cycle/testing`](https://github.com/cycle/testing/blob/1.x/.github/workflows/testing.yml).
 
 <br>
 
