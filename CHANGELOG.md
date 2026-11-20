@@ -1,5 +1,23 @@
 # Changelog
 
+## [4.2.0](https://github.com/cycle/gh-actions/compare/v4.1.0...v4.2.0) (2026-11-20)
+
+
+### Features
+
+* **infection:** add a reusable workflow for mutation testing with Infection ([#18](https://github.com/cycle/gh-actions/issues/18)) ([d9fd752](https://github.com/cycle/gh-actions/commit/d9fd7522e9ca6c31a409787d8baabd949ecdc01e))
+* **testo:** add a reusable workflow for Testo and cycle/testing packages ([#14](https://github.com/cycle/gh-actions/issues/14)) ([7202bde](https://github.com/cycle/gh-actions/commit/7202bde6187b2a76b32b6f08dbadf0b0b3608e0d))
+
+
+### Bug Fixes
+
+* **testo:** run every test job from one named matrix ([#16](https://github.com/cycle/gh-actions/issues/16)) ([567cbd7](https://github.com/cycle/gh-actions/commit/567cbd7a3798daa2d16866d84e28b3def88b2ad3))
+
+
+### Documentation
+
+* **testo:** name the caller job Testo in the example ([0694c76](https://github.com/cycle/gh-actions/commit/0694c766391cc2c1c7988225d24706d242b79096))
+
 ## [4.1.0](https://github.com/cycle/gh-actions/compare/v4.0.0...v4.1.0) (2024-06-11)
 
 
